@@ -1,4 +1,4 @@
-# BẢN ĐẶC TẢ YÊU CẦU NGHIỆP VỤ (SPECIFICATION) — LAB 1 ĐẾN LAB 3
+# BẢN ĐẶC TẢ YÊU CẦU NGHIỆP VỤ (SPECIFICATION) — LAB 1 ĐẾN LAB 5
 
 **Học phần:** Tiền điện tử và Hợp đồng thông minh (ECO2432)  
 **Đơn vị đào tạo:** Trường Đại học Kinh tế — Khoa Hệ thống Thông tin Kinh tế, Đại học Huế  
@@ -8,10 +8,12 @@
 ---
 
 ## MỤC LỤC TỔNG HỢP
-1. [QUY ƯỚC CHUNG VÀ TẦM QUAN TRỌNG CỦA ĐẶC TẢ](#quy-ước-chung)
+1. [QUY ƯỚC CHUNG VÀ NGUYÊN TẮC THIẾT KẾ ĐẶC TẢ](#quy-ước-chung)
 2. [LAB 1: ĐẶC TẢ THIẾT LẬP MÔI TRƯỜNG PHÁT TRIỂN & QUẢN TRỊ DANH TÍNH ON-CHAIN](#lab-1)
 3. [LAB 2: ĐẶC TẢ VÍ KHÔNG LƯU KÝ & CƠ CHẾ GIAO DỊCH P2P TRÊN ETHEREUM](#lab-2)
 4. [LAB 3: ĐẶC TẢ GIÁM SÁT DỮ LIỆU ON-CHAIN & THẨM ĐỊNH HỢP ĐỒNG THÔNG MINH](#lab-3)
+5. [LAB 4: ĐẶC TẢ HỢP ĐỒNG THÔNG MINH MYTOKEN (ERC-20, MINT, BURN & BLACKLIST)](#lab-4)
+6. [LAB 5: ĐẶC TẢ CÔNG CỤ PHÂN TÍCH DÒNG TIỀN ON-CHAIN & MÔ HÌNH KINH TẾ DÒNG TIỀN TOKEN](#lab-5)
 
 ---
 
@@ -87,7 +89,7 @@ Mô tả chi tiết quy trình thực thi một giao dịch chuyển tài sản 
 ### 2. Đầu vào
 - **Địa chỉ ví gửi (From):** Ví EOA của sinh viên thực hiện lệnh chuyển, số dư khả dụng tối thiểu $> 0,02$ Sepolia ETH.
 - **Địa chỉ ví nhận (To):** Ví EOA của bạn học cùng lớp, dạng chuỗi Hex 42 ký tự bắt đầu bằng tiền tố `0x`.
-- **Số lượng chuyển (Value):** Cố định $0,01$ Sepolia ETH cho phiên giao dịch thành công chuẩn.
+- **Số tiền chuyển (Value):** Cố định $0,01$ Sepolia ETH cho phiên giao dịch thành công chuẩn.
 - **Thông số phí mạng (Gas parameters):** Gas Limit tiêu chuẩn cho chuyển ETH đơn thuần ($21.000$ gas units), Max Fee per Gas và Priority Fee (Tip) do thị trường Sepolia quy định tại thời điểm gửi.
 - **Dữ liệu kịch bản lỗi có chủ đích:**
   - *Kịch bản A (Sai địa chỉ nhận):* Địa chỉ To bị thay đổi 01 ký tự bất kỳ làm sai lệch tổng kiểm checksum.
@@ -163,7 +165,7 @@ Mục tiêu nghề nghiệp: Chuẩn bị năng lực nền tảng cho chuyên v
 - **R7 (Bổ sung ngoài đề bài - Cơ chế phát hiện rửa tiền qua Internal Transactions):** Nếu trường `Value = 0 ETH` nhưng tài sản di chuyển là token hoặc thông qua contract trung gian, thẩm định viên bắt buộc phải kiểm tra tab "ERC-20 Token Txns" và "Internal Transactions" để truy vết dòng tiền thực tế.
 
 ### 4. Đầu ra
-- Tệp tài liệu `forensics.md` hoàn chỉnh theo đúng chuẩn mực của Sổ tay Thực hành ECO2432, bao gồm:
+- Tệp tài liệu `forensics.md` hoàn chỉnh gồm:
   - Bảng giải thích chi tiết 8 trường dữ liệu giao dịch on-chain kèm giá trị ứng dụng thực tiễn cho kế toán và AML.
   - Số liệu thực tế trích xuất từ 01 giao dịch thực tế trên mạng Sepolia Etherscan.
   - Kết quả thẩm định hợp đồng USDT/USDC trên Ethereum Mainnet trả lời chính xác 3 câu hỏi cốt lõi: Xác thực mã nguồn, Tổng cung lưu hành, và Cơ chế đóng băng tài sản.
@@ -178,3 +180,128 @@ Mục tiêu nghề nghiệp: Chuẩn bị năng lực nền tảng cho chuyên v
 - Không thực hiện gọi các hàm ghi (Write) trực tiếp trên Ethereum Mainnet để tránh phát sinh chi phí tiền thật.
 - Không phân tích các hợp đồng tài chính phái sinh phức tạp hoặc thuật toán thanh lý vay nợ tự động trong phạm vi Lab này.
 - Không dịch ngược toàn bộ các thư viện bytecode chưa xác thực của bên thứ ba.
+
+---
+
+<a name="lab-4"></a>
+## LAB 4: ĐẶC TẢ HỢP ĐỒNG THÔNG MINH MYTOKEN (ERC-20, MINT, BURN & BLACKLIST)
+
+```
+Tên bài: Thiết kế & Xây dựng Token ERC-20 chuẩn OpenZeppelin tích hợp Blacklist
+Hình thức: Nhóm / Cá nhân · Thời lượng: 75 phút
+Mục tiêu nghề nghiệp: Xây dựng hợp đồng tài sản số đáp ứng chuẩn mực phát hành tiền mã hóa, kiểm soát rủi ro kinh tế và tuân thủ phòng chống tội phạm tài chính (AML/CFT).
+```
+
+### 1. Mục đích
+Thiết kế và triển khai hợp đồng thông minh tài sản số `MyToken` (ký hiệu `MTK`) tuân thủ nghiêm ngặt tiêu chuẩn OpenZeppelin Contracts v5.x trên nền Solidity `^0.8.20`, tích hợp trần phát hành để ngăn chặn lạm phát vô hạn (bài học Lab 4, Phụ lục I.2), cơ chế đốt token giảm phát, và hệ thống đóng băng tài khoản (Blacklist/Freeze) nhằm trang bị năng lực quản trị rủi ro tuân thủ quy chuẩn pháp lý.
+
+### 2. Đầu vào
+- **Tham số nhận diện:**
+  - Tên token: `"MyToken"`
+  - Ký hiệu: `"MTK"`
+  - Số chữ số thập phân (`decimals`): `18`
+- **Số lượng đúc ban đầu (Initial Supply):** $1.000.000\text{ MTK}$ ($1.000.000 \times 10^{18}$ wei) được đúc trực tiếp vào ví người triển khai (`msg.sender`) trong hàm khởi tạo `constructor`.
+- **Hằng số giới hạn trần tổng cung (Max Supply Cap):** $10.000.000\text{ MTK}$ ($10.000.000 \times 10^{18}$ wei).
+- **Tham số hàm gọi quản trị:**
+  - `mint(address to, uint256 amount)`: Đúc thêm token đến ví chỉ định.
+  - `freezeAccount(address account)` / `addToBlacklist(address account)`: Đưa ví vào danh sách đen.
+  - `unfreezeAccount(address account)` / `removeFromBlacklist(address account)`: Mở khóa ví.
+  - `burn(uint256 amount)`: Người dùng tự hủy token từ số dư của chính mình.
+
+### 3. Quy tắc nghiệp vụ (Business Rules)
+- **R1 (Quyền lực đúc token có kiểm soát):** Chỉ duy nhất chủ sở hữu hợp đồng (`onlyOwner`) mới có thẩm quyền kích hoạt hàm `mint()`. Mọi nỗ lực gọi hàm từ ví không có quyền quản trị phải bị đảo ngược (revert) ngay lập tức.
+- **R2 (Bảo vệ giá trị chống lạm phát vô hạn):** Tổng cung lưu thông sau khi đúc không được phép vượt quá giới hạn trần `MAX_SUPPLY` ($10.000.000\text{ MTK}$). Đây là bài học thực tiễn từ Hợp đồng B (Phụ lục I.2) nhằm bảo vệ quyền lợi người nắm giữ token khỏi rủi ro bị chủ dự án pha loãng tài sản vô tội vạ.
+- **R3 (Cơ chế giảm phát tài sản - Burning):** Người nắm giữ token có quyền tự nguyện đốt bỏ một phần hoặc toàn bộ số dư của mình thông qua hàm `burn(amount)` (kế thừa `ERC20Burnable`), làm giảm trực tiếp cả số dư cá nhân và tổng cung lưu hành toàn mạng lưới.
+- **R4 (Cơ chế đóng băng tài khoản tập trung - Blacklist):** Chỉ chủ sở hữu (`onlyOwner`) mới có quyền thực thi `freezeAccount()` hoặc `unfreezeAccount()`. Một tài khoản khi bị đưa vào trạng thái đóng băng (`isFrozen[account] == true`) sẽ bị chặn hoàn toàn cả **chiều gửi** (không thể chuyển đi, không thể burn) và **chiều nhận** (không thể nhận chuyển khoản, không thể mint tới).
+- **R5 (Bảo vệ địa chỉ chủ sở hữu):** Hợp đồng nghiêm cấm hành vi tự đóng băng chính ví của Chủ sở hữu (`CannotFreezeOwner`), ngăn chặn nguy cơ hợp đồng rơi vào trạng thái bế tắc quản trị (Deadlock).
+- **R6 (Điểm chặn duy nhất tầng EVM v5):** Toàn bộ các logic kiểm tra danh sách đen phải được thực thi tại hàm hook `_update(address from, address to, uint256 value)` nội bộ của OpenZeppelin v5, bảo đảm không có bất kỳ ngóc ngách nào (kể cả `transferFrom` hay `burn`) có thể lách qua cơ chế kiểm soát.
+- **R7 (Bổ sung ngoài đề bài - Phát sự kiện kiểm toán):** Mọi thao tác quản trị nhạy cảm (`mint`, `freezeAccount`, `unfreezeAccount`) bắt buộc phải phát ra sự kiện on-chain tương ứng (`TokensMinted`, `AccountFrozen`, `AccountUnfrozen`) với các trường đánh chỉ mục (`indexed`) để các hệ thống giám sát AML ngoài chuỗi có thể lập chỉ mục theo thời gian thực.
+- **R8 (Bổ sung ngoài đề bài - Tối ưu hóa phí gas bằng Custom Errors):** Toàn bộ các điều kiện chặn lỗi phải sử dụng mã lỗi tùy biến (`revert ZeroAddressNotAllowed()`, `revert AccountIsFrozen()`) thay vì chuỗi văn bản dài trong `require`, giúp giảm kích thước bytecode triển khai và tiết kiệm gas giao dịch cho người dùng.
+
+### 4. Đầu ra
+- Tệp mã nguồn [MyToken.sol](file:///c:/SmartContractLab/contracts/MyToken.sol) hoàn chỉnh, biên dịch thành công 100% với trình biên dịch Solidity `0.8.20`.
+- Bộ kiểm thử tự động [MyToken.test.js](file:///c:/SmartContractLab/test/MyToken.test.js) vượt qua toàn bộ 17 ca kiểm nghiệm (Passing 17/17 tests).
+- Bảng ánh xạ trạng thái và sự kiện on-chain sẵn sàng tích hợp với giao diện Web3 DApp.
+
+### 5. Trường hợp ngoại lệ (Edge Cases & Exception Handling)
+- **E1 (Đúc token vượt trần):** Nếu chủ sở hữu cố gắng đúc số lượng token làm $\text{totalSupply} + \text{amount} > \text{MAX\_SUPPLY}$, hợp đồng kích hoạt lỗi `MaxSupplyExceeded(attemptedTotal, maxSupplyLimit)` và hủy bỏ giao dịch.
+- **E2 (Giao dịch liên quan đến ví bị đóng băng):** Nếu ví A gửi tiền cho ví B mà một trong hai ví (hoặc cả hai) nằm trong danh sách đen, giao dịch bị Revert lập tức với lỗi `AccountIsFrozen(account)`. Tiền không di chuyển, người gửi chịu phí gas đã tiêu thụ.
+- **E3 (Đóng băng tài khoản đã bị đóng băng trước đó):** Kích hoạt lỗi `AccountAlreadyFrozen(account)` nhằm tránh phát sinh sự kiện trùng lặp lãng phí gas.
+- **E4 (Mở khóa tài khoản chưa từng bị đóng băng):** Kích hoạt lỗi `AccountNotFrozen(account)`.
+- **E5 (Tương tác với địa chỉ rỗng):** Bất kỳ tham số nào nhận vào `address(0)` (cho `to` khi mint hoặc `account` khi freeze) đều kích hoạt lỗi `ZeroAddressNotAllowed()`.
+
+### 6. Ngoài phạm vi (Out of Scope)
+- Không tích hợp cơ chế thu phí trên mỗi giao dịch (Fee-on-transfer) trong phiên bản này.
+- Không cấu hình mô hình bỏ phiếu quản trị phi tập trung (Governance / DAO).
+- Không hỗ trợ tính năng cấp phép ngoài chuỗi (EIP-2612 Permit).
+
+---
+
+<a name="lab-5"></a>
+## LAB 5: ĐẶC TẢ CÔNG CỤ PHÂN TÍCH DÒNG TIỀN ON-CHAIN & MÔ HÌNH KINH TẾ DÒNG TIỀN TOKEN
+
+```
+Tên bài: Viết đặc tả cho công cụ phân tích dòng tiền
+Hình thức: Nhóm 2 người · Thời lượng: 75 phút · KHÔNG VIẾT MÃ NGUỒN TRONG BUỔI NÀY
+Mục tiêu nghề nghiệp: Chuẩn bị năng lực cho Chuyên viên phân tích nghiệp vụ (BA) sản phẩm tài sản số và Chuyên viên phân tích dữ liệu on-chain tại ngân hàng/công ty Fintech. Viết đặc tả đủ rõ để đội kỹ thuật hoặc công cụ AI làm ra đúng thứ mình muốn mà không cần hỏi lại.
+```
+
+### 1. Mục đích
+Xây dựng một công cụ phân tích dữ liệu on-chain chuyên sâu, tự động tiếp nhận một địa chỉ ví Ethereum mục tiêu (dạng EOA hoặc Contract), truy xuất và bóc tách toàn bộ lịch sử biến động số dư trong chu kỳ 90 ngày gần nhất thông qua Etherscan API; từ đó kết xuất báo cáo dòng tiền vào/ra, tính toán số dư khả dụng lũy kế theo thời gian thực, trực quan hóa biểu đồ tài chính và đối soát với quy tắc kinh tế token trong tệp [tokenomics.md](file:///c:/SmartContractLab/tokenomics.md).
+
+### 2. Đầu vào
+- **Địa chỉ ví mục tiêu:** Chuỗi định dạng Hex 42 ký tự bắt đầu bằng tiền tố `0x`, tuân thủ tổng kiểm chuẩn EIP-55 (ví dụ: ví của cá nhân, ví Quỹ kho bạc `classFund` hoặc ví cá voi).
+- **Khóa xác thực API (API Credentials):** Khóa `ETHERSCAN_API_KEY` đọc trực tiếp và bảo mật từ biến môi trường của hệ điều hành / tệp cấu hình `.env` (nghiêm cấm ghi cứng trong mã nguồn theo quy ước `AGENTS.md`).
+- **Khung thời gian phân tích (Time Window):** Số ngày cần phân tích tính từ thời điểm hiện tại ngược về quá khứ, giá trị mặc định là **90 ngày** ($\Delta t = 90 \times 86.400\text{ giây}$).
+- **Địa chỉ hợp đồng token MTK (Tùy chọn):** Địa chỉ triển khai của hợp đồng [contracts/MyToken.sol](file:///c:/SmartContractLab/contracts/MyToken.sol) để trích xuất dòng tiền token ERC-20 và đối soát phí chuyển nhượng.
+- **Tham số mạng:** Mặc định mạng Sepolia Testnet (`api-sepolia.etherscan.io`) hoặc Ethereum Mainnet (`api.etherscan.io`).
+
+### 3. Quy tắc nghiệp vụ (Business Rules)
+- **R1 (Quy chuẩn nhận diện Dòng tiền vào - Cash Inflow):** Mọi giao dịch hợp lệ có trường `to` trùng khớp với địa chỉ ví đang xét được hạch toán là **Dòng tiền vào**. Số tiền vào được cộng trực tiếp vào số dư lũy kế tại mốc thời gian đó:  
+  $$\Delta \text{Balance} = +\text{Value}$$
+- **R2 (Quy chuẩn nhận diện Dòng tiền ra - Cash Outflow):** Mọi giao dịch có trường `from` trùng khớp với địa chỉ ví đang xét được hạch toán là **Dòng tiền ra**.
+- **R3 (Nguyên tắc khấu trừ kép cho giao dịch đi ra):** Đối với mọi giao dịch đi ra thành công, số tiền thực tế bị trừ khỏi ví phải bao gồm cả giá trị chuyển dịch và chi phí tiêu hao mạng lưới (Transaction Gas Fee):  
+  $$\text{Dòng tiền ra thực tế} = \text{Value chuyển đi} + (\text{Gas Used} \times \text{Gas Price})$$
+- **R4 (Nguyên lý kế toán giao dịch thất bại):** Giao dịch có trạng thái thất bại (`Status == 0` / `isError == 1` / `Fail`) không làm chuyển dịch số tiền gốc `Value`, nhưng **toàn bộ phí gas đã tiêu thụ vẫn bị mạng lưới khấu trừ vĩnh viễn** khỏi số dư của ví gửi. Khoản phí này bắt buộc phải được hạch toán độc lập vào Dòng tiền ra:  
+  $$\text{Dòng tiền ra} = 0 + (\text{Gas Used} \times \text{Gas Price})$$
+- **R5 (Chuẩn hóa đơn vị đo lường BigNumber):** Mọi dữ liệu số dư và giá trị giao dịch trích xuất từ Etherscan API ở đơn vị cơ sở `wei` bắt buộc phải được chuyển đổi sang đơn vị `ETH` bằng cách chia cho $10^{18}$ trước khi thực hiện các phép cộng trừ kế toán và hiển thị cho người dùng.
+- **R6 (Tuần tự hóa thời gian tuyệt đối):** Toàn bộ danh sách giao dịch sau khi làm sạch phải được sắp xếp theo trật tự thời gian tăng dần (Chronological Order: từ giao dịch cũ nhất đến mới nhất) dựa trên chỉ số khối (`blockNumber`) và dấu thời gian (`timeStamp`) trước khi tính toán số dư lũy kế (Cumulative Running Balance).
+- **R7 (Bổ sung ngoài đề bài - Đối soát dòng tiền kép Token MTK & Phí giao dịch 1%):** Khi người dùng kích hoạt cờ phân tích Token ERC-20, hệ thống gọi thêm endpoint `tokentx`. Với mỗi lệnh chuyển MTK, công cụ tự động bóc tách:
+  - Số lượng token thực nhận của ví đích: $\text{Received} = \text{Amount} \times (1 - \text{feeBps}/10.000) = \text{Amount} \times 99\%$.
+  - Số lượng token trích nạp Quỹ Kho bạc `classFund`: $\text{Fee} = \text{Amount} \times 1\%$.
+- **R8 (Bổ sung ngoài đề bài - Nhận diện mẫu hình dòng tiền bất thường AML):** Tích hợp thuật toán cảnh báo đỏ (Red Flags) cho chuyên viên tuân thủ:
+  - Cảnh báo **Layering / Smurfing:** Khi ví thực hiện $\ge 5$ giao dịch giá trị giống hệt nhau trong vòng dưới 10 phút (mẫu hình vụ hack Bybit Lab 3B).
+  - Cảnh báo **Wash Trading:** Khi xuất hiện chuỗi giao dịch chuyển tiền vòng tròn A $\rightarrow$ B $\rightarrow$ A trong cùng một ngày.
+
+### 4. Đầu ra
+- **Bảng nhật ký dòng tiền chi tiết (Cashflow Ledger Table):** Kết xuất bảng dữ liệu gồm 7 trường chuẩn:
+  1. `Dấu thời gian (UTC)`: Ngày giờ phát sinh giao dịch chuẩn ISO-8601.
+  2. `Mã băm giao dịch (TxHash)`: Định danh rút gọn kèm liên kết trực tiếp tới Etherscan.
+  3. `Phân loại luồng tiền`: Dán nhãn `VÀO (Inflow)`, `RA (Outflow)`, hoặc `THẤT BẠI (Failed)`.
+  4. `Số tiền chuyển (Value)`: Đơn vị ETH / MTK đã chuẩn hóa.
+  5. `Phí giao dịch thực trả (Tx Fee)`: Đơn vị ETH.
+  6. `Ví đối tác (Counterparty)`: Địa chỉ gửi (nếu tiền vào) hoặc địa chỉ nhận (nếu tiền ra).
+  7. `Số dư lũy kế (Cumulative Balance)`: Số dư khả dụng của ví ngay sau thời điểm giao dịch được xác nhận.
+- **Biểu đồ biến thiên số dư theo thời gian (Interactive Balance Chart):**
+  - Trục hoành ($X$): Trục thời gian trải dài từ ngày $T-90$ đến ngày $T$.
+  - Trục tung ($Y$): Số dư lũy kế (ETH / MTK).
+  - Điểm đánh dấu (Markers): Các mốc đột biến có dòng tiền lớn $> 10\%$ số dư trung bình.
+- **Bảng tóm tắt chỉ số tài chính tổng hợp (Executive Summary Metrics):**
+  - *Tổng tiền vào trong kỳ (Total Inflow):* $\sum \text{Inflow}$.
+  - *Tổng tiền ra trong kỳ (Total Outflow):* $\sum \text{Outflow}$ (bao gồm cả giá trị chuyển và tổng phí gas).
+  - *Tổng phí mạng đã nộp cho EVM (Total Gas Burned):* $\sum \text{Gas Fee}$.
+  - *Số dư ròng biến động (Net Cashflow):* $\text{Total Inflow} - \text{Total Outflow}$.
+  - *Số dư cuối kỳ thực tế (Closing Balance):* Đối chiếu khớp $100\%$ với kết quả trả về từ hàm `eth_getBalance`.
+
+### 5. Trường hợp ngoại lệ (Edge Cases & Exception Handling)
+- **E1 (Ví không phát sinh giao dịch trong kỳ - Zero Activity):** Nếu Etherscan API trả về danh sách giao dịch rỗng (`result = []` hoặc `message = "No transactions found"`), công cụ hiển thị thông báo nghiệp vụ thân thiện: *"Ví không có giao dịch trong chu kỳ 90 ngày được chọn"*, không ném ngoại lệ dừng chương trình; đồng thời tự động gọi phương thức `eth_getBalance` để hiển thị số dư tĩnh hiện tại của ví.
+- **E2 (Khóa API không hợp lệ hoặc vượt ngưỡng giới hạn tần suất - Rate Limit / Invalid Key):** Nếu API trả về `status = "0"` kèm thông báo lỗi (như *"Invalid API Key"* hoặc *"Max rate limit reached"*), hệ thống bắt lỗi (try/catch), in cảnh báo hướng dẫn người dùng kiểm tra lại biến môi trường `.env`, kích hoạt cơ chế tự động chờ thử lại sau 1 giây (Exponential Backoff), tuyệt đối không để lộ chuỗi khóa API ra log màn hình.
+- **E3 (Ví có số lượng giao dịch khổng lồ vượt ngưỡng trang - Pagination > 10.000 Txns):** Etherscan giới hạn tối đa $10.000$ giao dịch cho mỗi lần gọi API đơn lẻ. Khi gặp các ví hoạt động với tần suất cao (sàn giao dịch hoặc bot), hệ thống phải kích hoạt thuật toán phân trang tự động: chia nhỏ khoảng khối (`startblock` đến `endblock`) và lặp truy vấn để thu thập đầy đủ $100\%$ dữ liệu lịch sử mà không bỏ sót bất kỳ dòng tiền nào.
+- **E4 (Dòng tiền ẩn qua Giao dịch nội bộ - Internal Transactions):** Các giao dịch rút tiền từ hợp đồng thông minh hoặc ví đa chữ ký (như ví Gnosis Safe trong vụ hack Bybit) có trường `Value = 0` ở tầng giao dịch gốc. Hệ thống tự động kích hoạt truy vấn song song endpoint `txlistinternal` để đối soát, bảo đảm số dư lũy kế không bị sai lệch so với thực tế sổ cái on-chain.
+- **E5 (Giao dịch tự chuyển cho chính mình - Self-Transfer):** Khi `from == to == targetWallet`, số tiền chuyển không làm thay đổi số dư tài sản gốc, nhưng giao dịch vẫn tiêu tốn phí gas. Hệ thống nhận diện và chỉ hạch toán khoản phí gas vào dòng tiền ra, gán nhãn nghiệp vụ là *"Self-transfer / Gas Burn"*.
+
+### 6. Ngoài phạm vi (Out of Scope)
+- Không xây dựng mô hình máy học (AI/ML) để dự báo xu hướng giá tương lai của đồng tiền số.
+- Không tự động thực thi các lệnh đảo ngược giao dịch, phong tỏa số dư hay can thiệp vào máy ảo EVM (vì tính bất biến của Blockchain).
+- Không quy đổi tự động ra tiền pháp định (VND hoặc USD) theo tỷ giá thời gian thực trong phiên bản này, nhằm tránh rủi ro sai lệch do phụ thuộc vào nhà cung cấp dữ liệu Oracle bên thứ ba.
+- Không xử lý các mạng lưới Blockchain không tương thích chuẩn EVM (như Bitcoin UTXO, Solana hay Tron) trong phạm vi học phần này.

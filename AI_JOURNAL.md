@@ -19,6 +19,8 @@
 | **05** | Lab 3 | Ảo giác tên hàm đóng băng tài khoản và đặc tả chuẩn ERC-20 của USDT | [Không đạt] | **Sinh viên phát hiện** |
 | **06** | Lab 3B | Nhầm lẫn trường From/To và bản chất tin nhắn on-chain vụ hack Bybit | [Không đạt] | **Sinh viên phát hiện** |
 | **07** | Lab 10 | Ảo tưởng về tính bí mật của biến trạng thái `private` trong Solidity | [Lưu ý] | **Sinh viên phát hiện** |
+| **08** | Lab 4 | Lỗi thời `_beforeTokenTransfer` (OZ v4) trên v5 và rủi ro đúc vô trần | [Không đạt] | **Sinh viên phát hiện** |
+| **09** | Lab 5 / Lab 8 | Thiết kế quy tắc kinh tế tokenomics, đặc tả dòng tiền và 5 phản biện nhà đầu tư | [Lưu ý] | **Sinh viên phát hiện** |
 
 ---
 
@@ -207,8 +209,72 @@
 
 ---
 
+### Lần 8 — Lab 4: Xây dựng hợp đồng MyToken.sol và lỗi thời phiên bản OpenZeppelin v5
+
+- **Prompt (dán nguyên văn — áp dụng mẫu Phụ lục II.2):**
+  > "Đọc tệp SPEC.md trong dự án và viết mã hợp đồng Solidity MyToken.sol kế thừa OpenZeppelin ERC20, ERC20Burnable, Ownable. Yêu cầu có hàm mint, burn và chức năng đóng băng tài khoản (Blacklist). Tuân thủ mọi quy ước trong AGENTS.md. Trước khi viết mã, hãy tóm tắt lại cách bạn hiểu yêu cầu."
+
+- **AI trả về (tóm tắt):**
+  > AI sinh mã hợp đồng có sử dụng hàm hook:
+  > ```solidity
+  > function _beforeTokenTransfer(address from, address to, uint256 amount) internal override {
+  >     require(!isFrozen[from], "From account is frozen");
+  >     super._beforeTokenTransfer(from, to, amount);
+  > }
+  > ```
+  > Đồng thời hàm `mint()` cho phép `onlyOwner` đúc số lượng tùy ý không có giới hạn trần tổng cung.
+
+- **Đánh giá:** `[Không đạt] Sai, bỏ` (Lỗi biên dịch do phiên bản thư viện lỗi thời và rủi ro kinh tế).
+
+- **Chỗ sai (mô tả cụ thể):**
+  > 1. Thư viện OpenZeppelin v5.x đã **loại bỏ hoàn toàn hàm `_beforeTokenTransfer`** và thay thế bằng cơ chế `_update(address from, address to, uint256 value)`. Khi biên dịch bằng Hardhat, trình biên dịch báo lỗi nghiêm trọng: `DeclarationError: Function has override specified but does not override any base class function`. Đây là bẫy phổ biến của AI do dữ liệu huấn luyện chủ yếu dựa trên OpenZeppelin v4 (đúng như TS. Hà Ngọc Long đã cảnh báo tại trang 30 của Sổ tay).
+  > 2. Hàm `mint()` không có trần giới hạn tổng cung (`MAX_SUPPLY`), lặp lại đúng rủi ro kinh tế của Hợp đồng B trong Phụ lục I.2 (chủ sở hữu có thể tự do pha loãng vô hạn làm mất giá trị token của nhà đầu tư).
+
+- **Cách sửa (sinh viên đã làm gì):**
+  > 1. Sinh viên đối chiếu với tài liệu OpenZeppelin Contracts v5 chính thức và tệp `AGENTS.md`, chuyển sang override hàm hook `_update(address from, address to, uint256 value)` để chặn cả chiều gửi (`from != address(0) && isFrozen[from]`) và chiều nhận (`to != address(0) && isFrozen[to]`).
+  > 2. Khai báo hằng số `uint256 public constant MAX_SUPPLY = 10_000_000 * 10 ** 18;` và bổ sung điều kiện kiểm tra `if (totalSupply() + amount > MAX_SUPPLY) revert MaxSupplyExceeded(...)` vào hàm `mint()`.
+  > 3. Thay thế toàn bộ `require` bằng Custom Errors để tối ưu hóa gas.
+
+- **Ai phát hiện:** **Sinh viên phát hiện** (Kiểm tra lỗi biên dịch và đối chiếu chuẩn thiết kế tokenomics).
+
+---
+
+### Lần 9 — Lab 5 & Lab 8: Đặc tả dòng tiền on-chain, thiết kế kinh tế token và phản biện nhà đầu tư thận trọng
+
+- **Prompt (dán nguyên văn — kết hợp mẫu Phụ lục II.6 & yêu cầu Lab 5):**
+  > "Dựa trên yêu cầu của LAB 5 — VIẾT ĐẶC TẢ CHO CÔNG CỤ PHÂN TÍCH DÒNG TIỀN trong Sổ tay thực hành:
+  > 1. Hãy tạo tệp `tokenomics.md` mô tả đặc tả dòng tiền và quy tắc kinh tế token cho dự án của tôi theo đúng cấu trúc tiêu chuẩn.
+  > 2. Đóng vai là một nhà đầu tư thận trọng, hãy tự phản biện dự án bằng cách đưa ra 5 điểm yếu nghiêm trọng nhất (xếp theo mức độ rủi ro giảm dần) và mô tả tình huống cụ thể người dùng bị thiệt hại đối với tệp `tokenomics.md` vừa tạo.
+  > 3. Thêm mục 'Phản biện và trả lời' vào cuối tệp `tokenomics.md` để trả lời đầy đủ từng điểm trong 5 phản biện trên (nêu rõ căn cứ chấp nhận rủi ro hoặc phương án xử lý).
+  > 4. Cập nhật các câu lệnh và tiến trình công việc này vào tệp `AI_JOURNAL.md` và `SPEC.md`."
+
+- **AI trả về (tóm tắt):**
+  > AI phác thảo bản `tokenomics.md` ban đầu. Tuy nhiên, các luận điểm phản biện mang tính "tiếp thị bề nổi" (cho rằng dự án thiếu marketing, cộng đồng chưa đông, giao diện chưa bắt mắt). Ngoài ra, ở phần dòng tiền, AI xem nhẹ bản chất khấu trừ gas của EVM (chỉ tính dòng tiền ra là số token/ETH chuyển đi mà quên cộng phí gas), không đề cập đến việc giao dịch thất bại vẫn làm hao hụt số dư gas, và cho rằng trần 2% nắm giữ trong mã nguồn là đã ngăn chặn triệt để cá mập thao túng.
+
+- **Đánh giá:** `[Lưu ý] Phải sửa` (Thiếu góc nhìn tài chính thực tế và bẫy nhận thức về tính ẩn danh Blockchain).
+
+- **Chỗ sai (mô tả cụ thể):**
+  > 1. **Mắc bẫy "Quy tắc kỹ thuật thay thế định danh" (Câu hỏi E5 trang 55):** AI khẳng định quy định `maxHolding = 2%` trong hàm `_update` đã bảo vệ an toàn cho nhà đầu tư khỏi cá voi. Thực tế, kẻ thao túng dễ dàng thực hiện tấn công mạo danh (Sybil Attack) bằng cách phân tán tiền ra 25-30 ví EOA mới để âm thầm thâu tóm 40-50% tổng cung.
+  > 2. **Bỏ qua rủi ro tương thích DeFi (Fee-on-Transfer Composability):** AI đề xuất cơ chế trích 1% phí chuyển nhượng về ví Quỹ nhưng không cảnh báo rằng điều này sẽ làm gãy tính tương thích với Uniswap V2 Router chuẩn và các hợp đồng ký quỹ `SimpleEscrow.sol`, gây lỗi thiếu số dư và làm kẹt vĩnh viễn tiền của người dùng.
+  > 3. **Nhầm lẫn kế toán dòng tiền on-chain (Lab 5):** AI không đưa quy tắc hạch toán kép: Với giao dịch ra, $\text{Dòng tiền ra} = \text{Value} + \text{Gas Fee}$; và giao dịch `Fail` vẫn bị trừ phí gas mạng.
+
+- **Cách sửa (sinh viên đã làm gì):**
+  > 1. Sinh viên áp dụng kỷ luật prompt theo Phụ lục II.6: Ép AI vào vai nhà đầu tư thận trọng, tập trung bóc trần 5 điểm yếu nghiêm trọng nhất xếp theo mức độ giảm dần từ Thảm họa (Critical) đến Trung bình (Low-Medium) kèm tình huống thiệt hại cụ thể.
+  > 2. Sinh viên trực tiếp đưa ra các giải pháp công nghệ vững chắc trong mục 5.2 của [tokenomics.md](file:///c:/SmartContractLab/tokenomics.md):
+  >    - Chuyển giao Admin Key sang Gnosis Safe Multi-sig ($3/5$) và OpenZeppelin TimelockController hoãn thi hành 48 giờ.
+  >    - Áp dụng hợp đồng `TokenVesting.sol` khóa tuyến tính token sáng lập (Cliff 6 tháng, Vesting 18 tháng).
+  >    - Kết hợp định danh on-chain qua [contracts/StudentRegistry.sol](file:///c:/SmartContractLab/contracts/StudentRegistry.sol) và Soulbound Token (SBT) để vô hiệu hóa tấn công Sybil.
+  >    - Thiết lập danh sách `isFeeExempt` cho các địa chỉ DEX Router/Pair để bảo toàn tính tương thích DeFi.
+  >    - Xây dựng mô hình Mua lại & Đốt (Buyback-and-Burn) từ doanh thu dịch vụ thật (Real Yield) để neo giá trị kinh tế.
+  > 3. Hoàn thiện toàn diện mục Lab 5 trong [SPEC.md](file:///c:/SmartContractLab/SPEC.md) tuân thủ đúng chuẩn 6 phần và các quy tắc R1–R8 của TS. Long.
+
+- **Ai phát hiện:** **Sinh viên phát hiện** (Dựa trên kiến thức thẩm định rủi ro Lab 4, câu hỏi tình huống E5 và bài toán dòng tiền Lab 5).
+
+---
+
 ## BÀI HỌC KINH NGHIỆM VÀ QUY TẮC PHỐI HỢP VỚI AI
 
 1. **AI chỉ biết những gì đã có, không biết những gì vừa cập nhật:** Điển hình là AI thường sinh mã theo OpenZeppelin v4 (vẫn dùng hàm `_beforeTokenTransfer` đã bị xóa bỏ trên bản v5, thay vì hàm `_update`). Sinh viên luôn phải mở tài liệu chính thức (Official Docs) để kiểm chứng.
 2. **Nguyên tắc "Prompt có ranh giới cấm" (Negative Constraints):** Khi ra lệnh cho AI, câu quan trọng nhất luôn là: *"Chỉ trả lời dựa trên mã nguồn tôi cung cấp. Nếu không tìm thấy, hãy nói rõ là không tìm thấy, tuyệt đối không được suy đoán hoặc bịa đặt nội dung"*.
 3. **Sinh viên là người chịu trách nhiệm cuối cùng:** AI là công cụ gia tăng tốc độ, nhưng năng lực thẩm định nghiệp vụ, rà soát tính hợp lý của số liệu kế toán và đánh giá rủi ro pháp trị là tài sản độc quyền của sinh viên ngành Kinh tế / Fintech.
+
